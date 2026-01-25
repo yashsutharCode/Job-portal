@@ -8,12 +8,14 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { USER_API_END_POINT } from "../../utils/constant.js";
 import toast from "react-hot-toast";
-
-
-// const USER_API_END_POINT = "http://localhost:8000/api/v1/user";
+import { useDispatch, useSelector } from "react-redux";
+import { setLoading, setUser } from "../../redux/authSlice";
+import { Loader2 } from "lucide-react";
 
 const Login = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { loading } = useSelector((store) => store.auth);
 
   const [input, setInput] = useState({
     email: "",
@@ -28,19 +30,23 @@ const Login = () => {
   const submitHandler = async (e) => {
     e.preventDefault();
     try {
+      dispatch(setLoading(true));
       const res = await axios.post(`${USER_API_END_POINT}/login`, input, {
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         withCredentials: true,
       });
+
       if (res.data.success) {
-        navigate("/");
+        dispatch(setUser(res.data.user));
+         navigate("/");
         toast.success(res.data.message);
+       
       }
     } catch (error) {
       console.log(error);
       toast.error(error?.response?.data?.message || "Login failed");
+    } finally {
+      dispatch(setLoading(false));
     }
   };
 
@@ -76,36 +82,42 @@ const Login = () => {
             />
           </div>
 
-          <div className="flex items-center justify-between">
-            <RadioGroup className="flex items-center gap-4 my-5">
-              <div className="flex items-center space-x-2">
-                <Input
-                  type="radio"
-                  name="role"
-                  value="student"
-                  checked={input.role === "student"}
-                  onChange={changeEventHandler}
-                  className="cursor-pointer"
-                />
-                <Label>Student</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Input
-                  type="radio"
-                  name="role"
-                  value="recruiter"
-                  checked={input.role === "recruiter"}
-                  onChange={changeEventHandler}
-                  className="cursor-pointer"
-                />
-                <Label>Recruiter</Label>
-              </div>
-            </RadioGroup>
-          </div>
+          <RadioGroup className="flex items-center gap-4 my-5">
+            <div className="flex items-center space-x-2">
+              <Input
+                type="radio"
+                name="role"
+                value="student"
+                checked={input.role === "student"}
+                onChange={changeEventHandler}
+                className="cursor-pointer"
+              />
+              <Label>Student</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Input
+                type="radio"
+                name="role"
+                value="recruiter"
+                checked={input.role === "recruiter"}
+                onChange={changeEventHandler}
+                className="cursor-pointer"
+              />
+              <Label>Recruiter</Label>
+            </div>
+          </RadioGroup>
 
-          <Button type="submit" className="w-full my-4">
-            Login
-          </Button>
+          {loading ? (
+            <Button disabled className="w-full my-4">
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Please wait...
+            </Button>
+          ) : (
+            <Button type="submit" className="w-full my-4">
+              Login
+            </Button>
+          )}
+
           <span className="text-sm">
             Don't have an account?
             <Link to="/signup" className="text-blue-600 mx-1">

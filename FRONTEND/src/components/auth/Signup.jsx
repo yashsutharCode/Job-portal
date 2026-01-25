@@ -7,12 +7,16 @@ import { Button } from "../ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-hot-toast";
-
+import { useDispatch, useSelector } from "react-redux";
+import { setLoading } from "../../redux/authSlice";
+import { Loader2 } from "lucide-react";
 
 const USER_API_END_POINT = "http://localhost:8000/api/v1/user";
 
 const Signup = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { loading } = useSelector((store) => store.auth);
 
   const [input, setInput] = useState({
     fullname: "",
@@ -43,10 +47,9 @@ const Signup = () => {
     if (input.file) formData.append("file", input.file);
 
     try {
+      dispatch(setLoading(true));
       const res = await axios.post(`${USER_API_END_POINT}/register`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true,
       });
 
@@ -57,6 +60,8 @@ const Signup = () => {
     } catch (error) {
       console.log(error);
       toast.error(error?.response?.data?.message || "Signup failed");
+    } finally {
+      dispatch(setLoading(false));
     }
   };
 
@@ -114,46 +119,52 @@ const Signup = () => {
             />
           </div>
 
-          <div className="flex items-center justify-between">
-            <RadioGroup className="flex items-center gap-4 my-5">
-              <div className="flex items-center space-x-2">
-                <Input
-                  type="radio"
-                  name="role"
-                  value="student"
-                  checked={input.role === "student"}
-                  onChange={changeEventHandler}
-                  className="cursor-pointer"
-                />
-                <Label>Student</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Input
-                  type="radio"
-                  name="role"
-                  value="recruiter"
-                  checked={input.role === "recruiter"}
-                  onChange={changeEventHandler}
-                  className="cursor-pointer"
-                />
-                <Label>Recruiter</Label>
-              </div>
-            </RadioGroup>
-
-            <div className="flex items-center gap-2">
-              <Label>Profile</Label>
+          <RadioGroup className="flex items-center gap-4 my-5">
+            <div className="flex items-center space-x-2">
               <Input
-                accept="image/*"
-                type="file"
-                onChange={changeFileHandler}
+                type="radio"
+                name="role"
+                value="student"
+                checked={input.role === "student"}
+                onChange={changeEventHandler}
                 className="cursor-pointer"
               />
+              <Label>Student</Label>
             </div>
+            <div className="flex items-center space-x-2">
+              <Input
+                type="radio"
+                name="role"
+                value="recruiter"
+                checked={input.role === "recruiter"}
+                onChange={changeEventHandler}
+                className="cursor-pointer"
+              />
+              <Label>Recruiter</Label>
+            </div>
+          </RadioGroup>
+
+          <div className="flex items-center gap-2 my-3">
+            <Label>Profile</Label>
+            <Input
+              accept="image/*"
+              type="file"
+              onChange={changeFileHandler}
+              className="cursor-pointer"
+            />
           </div>
 
-          <Button type="submit" className="w-full my-4">
-            Signup
-          </Button>
+          {loading ? (
+            <Button disabled className="w-full my-4">
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Please wait...
+            </Button>
+          ) : (
+            <Button type="submit" className="w-full my-4">
+              Signup
+            </Button>
+          )}
+
           <span className="text-sm">
             Already have an account?
             <Link to="/login" className="text-blue-600 mx-1">
