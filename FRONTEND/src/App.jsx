@@ -1,42 +1,45 @@
-import {createBrowserRouter, RouterProvider} from "react-router-dom"  
-import Signup from "./components/auth/signup.jsx"
-import Login from "./components/auth/Login.jsx"
-import Home from "./components/Home.jsx"
-import Jobs from "./components/Jobs.jsx"
-import Browse from "./components/Browse.jsx"
-
-
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import Signup from "./components/auth/signup.jsx";
+import Login from "./components/auth/Login.jsx";
+import Home from "./components/Home.jsx";
+import Jobs from "./components/Jobs.jsx";
+import Browse from "./components/Browse.jsx";
+import Profile from "./components/profile.jsx";
+import JobDescription from "./components/JobDescription.jsx";
 
 const appRouter = createBrowserRouter([
-  { 
+  {
     path: "/",
-    element: <Home />
+    element: <Home />,
   },
-   { 
+  {
     path: "/login",
-    element: <Login />
+    element: <Login />,
   },
-   { 
+  {
     path: "/signup",
-    element: <Signup />
+    element: <Signup />,
   },
   {
     path: "/jobs",
-    element: <Jobs />
+    element: <Jobs />,
+  },
+  {
+    path: "/description/:id",
+    element: <JobDescription />,
   },
   {
     path: "/browse",
-    element: <Browse />
-  }
-])
-
+    element: <Browse />,
+  },
+  {
+    path: "/profile",
+    element: <Profile />,
+  },
+]);
 
 function App() {
-  return (
-    <>
-   <RouterProvider router={appRouter} />
-    </>
-  )
+  return <RouterProvider router={appRouter} />;
 }
 
-export default App
+export default App;
