@@ -1,4 +1,4 @@
-import React, { useState } from "react"; // Added useState
+import React, { useState } from "react";
 import Navbar from "../shared/Navbar";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
@@ -7,15 +7,23 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { COMPANY_API_END_POINT } from "@/utils/constant";
 import { toast } from "sonner";
-import { useDispatch } from "react-redux";
-import { setSingleCompany } from "@/redux/companySlice.js";// Changed to relative path
+import { useDispatch, useSelector } from "react-redux";
+import { setSingleCompany } from "@/redux/companySlice.js";
 
 const CompanyCreate = () => {
   const navigate = useNavigate();
-  const [companyName, setCompanyName] = useState(""); // Initialize with empty string
+  const [companyName, setCompanyName] = useState("");
   const dispatch = useDispatch();
+  const { user } = useSelector((store) => store.auth);
 
   const registerNewCompany = async () => {
+    // 🔥 check login
+    if (!user) {
+      toast.error("Please login first");
+      navigate("/login");
+      return;
+    }
+
     try {
       const res = await axios.post(
         `${COMPANY_API_END_POINT}/register`,
@@ -25,13 +33,13 @@ const CompanyCreate = () => {
             "Content-Type": "application/json",
           },
           withCredentials: true,
-        },
+        }
       );
+
       if (res?.data?.success) {
         dispatch(setSingleCompany(res.data.company));
         toast.success(res.data.message);
-        const companyId = res?.data?.company?._id;
-        navigate(`/admin/companies/${companyId}`);
+        navigate(`/admin/companies/${res.data.company._id}`);
       }
     } catch (error) {
       console.log(error);
@@ -46,8 +54,7 @@ const CompanyCreate = () => {
         <div className="my-10">
           <h1 className="font-bold text-2xl">Your Company Name</h1>
           <p className="text-gray-500">
-            What would you like to give your company name? you can change this
-            later.
+            What would you like to give your company name? you can change this later.
           </p>
         </div>
 
@@ -59,6 +66,7 @@ const CompanyCreate = () => {
           value={companyName}
           onChange={(e) => setCompanyName(e.target.value)}
         />
+
         <div className="flex items-center gap-2 my-10">
           <Button
             variant="outline"
@@ -66,6 +74,7 @@ const CompanyCreate = () => {
           >
             Cancel
           </Button>
+
           <Button onClick={registerNewCompany}>Continue</Button>
         </div>
       </div>
