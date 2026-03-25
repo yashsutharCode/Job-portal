@@ -4,7 +4,7 @@ const isAuthenticated = async (req, res, next) => {
   try {
     const token = req.cookies.token;
 
-    console.log("Cookies:", req.cookies); // DEBUG
+    // console.log("Cookies:", req.cookies); // DEBUG
 
     if (!token) {
       return res.status(401).json({

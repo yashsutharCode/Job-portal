@@ -8,20 +8,33 @@ const useGetAllJobs = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
+    const controller = new AbortController(); // ✅ cancel request if unmount
+
     const fetchAllJobs = async () => {
       try {
         const res = await axios.get(`${JOB_API_END_POINT}/get`, {
           withCredentials: true,
+          signal: controller.signal, // ✅ attach signal
         });
-        if (res.data.success) {
-          dispatch(setAllJobs(res.data.jobs));
+
+        if (res?.data?.success) {
+          dispatch(setAllJobs(res.data.jobs || []));
         }
       } catch (error) {
-        console.log(error);
+        if (error.name !== "CanceledError") {
+          console.log(
+            "Error fetching jobs:",
+            error?.response?.data?.message || error.message
+          );
+        }
       }
     };
 
     fetchAllJobs();
+
+    return () => {
+      controller.abort(); // ✅ cancel API call on unmount
+    };
   }, [dispatch]);
 };
 
