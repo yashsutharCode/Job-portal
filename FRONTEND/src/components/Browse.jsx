@@ -5,16 +5,17 @@ import Job from './Job'
 const randomJobs = [1, 2, 45];
 
 const Browse = () => {
+    const {allJobs} = useSelector(store => store.job);
     return (
         <div>
             <Navbar />
             <div className='max-w-7xl mx-auto my-10'>
-                <h1 className='font-bold text-xl my-10'>Search Results ({randomJobs.length})</h1>
+                <h1 className='font-bold text-xl my-10'>Search Results ({allJobs.length})</h1>
                 <div className='grid grid-cols-3 gap-4'>
                     {
-                        randomJobs.map((item, index) => {
+                        allJobs.map((job) => {
                             return (
-                                <Job />
+                                <Job key={job._id} />
                             )
                         })
                     }
