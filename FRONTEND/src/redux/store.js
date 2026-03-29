@@ -1,55 +1,58 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
-import authReducer from "./authSlice";
-import jobReducer from "./jobSlice";
-import companyReducer from "./companySlice";
+import authSlice from "./authSlice";
+import jobSlice from "./jobSlice";
+import companySlice from "./companySlice";
+import applicationSlice from "./applicationSlice"; //
+
 
 import {
-  persistStore,
-  persistReducer,
-  FLUSH,
-  REHYDRATE,
-  PAUSE,
-  PERSIST,
-  PURGE,
-  REGISTER,
+    persistStore,
+    persistReducer,
+    FLUSH,
+    REHYDRATE,
+    PAUSE,
+    PERSIST,
+    PURGE,
+    REGISTER,
 } from "redux-persist";
 
 import storage from "redux-persist/lib/storage";
 
-// Persist config
+// 1. Persist config
 const persistConfig = {
-  key: "root",
-  version: 1,
-  storage,
+    key: "root",
+    version: 1,
+    storage,
 };
 
-// Combine reducers
+// 2. Combine reducers
 const rootReducer = combineReducers({
-  auth: authReducer,
-  job: jobReducer,
-  company: companyReducer,
+    auth: authSlice,
+    job: jobSlice,
+    company: companySlice,
+    application: applicationSlice //
 });
 
-// Persisted reducer
+// 3. Persisted reducer
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
-// ✅ Named export (IMPORTANT)
+// 4. Configure store
 export const store = configureStore({
-  reducer: persistedReducer,
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({
-      serializableCheck: {
-        ignoredActions: [
-          FLUSH,
-          REHYDRATE,
-          PAUSE,
-          PERSIST,
-          PURGE,
-          REGISTER,
-        ],
-      },
-    }),
+    reducer: persistedReducer,
+    middleware: (getDefaultMiddleware) =>
+        getDefaultMiddleware({
+            serializableCheck: {
+                ignoredActions: [
+                    FLUSH,
+                    REHYDRATE,
+                    PAUSE,
+                    PERSIST,
+                    PURGE,
+                    REGISTER,
+                ],
+            },
+        }),
 });
 
-// ✅ Export persistor
+// 5. Export persistor
 export const persistor = persistStore(store);

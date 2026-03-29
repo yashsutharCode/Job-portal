@@ -32,7 +32,10 @@ const Job = ({ job }) => {
       <div className="flex items-center gap-2 my-2">
         <Button className="p-6" variant="outline" size="icon">
           <Avatar>
-            <AvatarImage src="https://toppng.com/uploads/preview/free-logo-design-11551057495oqoep79juj.png" />
+            {/* Use the dynamic logo from your database, with a fallback just in case */}
+            <AvatarImage
+              src={job?.company?.logo || "https://toppng.com/uploads/preview/free-logo-design-11551057495oqoep79juj.png"}
+            />
           </Avatar>
         </Button>
         <div>

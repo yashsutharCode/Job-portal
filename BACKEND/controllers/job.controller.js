@@ -100,8 +100,15 @@ export const getJobById = async (req, res) => {
 export const getAdminJobs = async (req, res) => {
     try {
         const adminId = req.id;
-        const jobs = await Job.find({ created_by: adminId });
-        if (!jobs) {
+        
+        // Add .populate({ path: 'company' }) here
+        const jobs = await Job.find({ created_by: adminId })
+            .populate({
+                path: 'company'
+            })
+            .sort({ createdAt: -1 }); // Added sort to see latest jobs first
+
+        if (!jobs || jobs.length === 0) {
             return res.status(404).json({
                 message: "Jobs not found.",
                 success: false

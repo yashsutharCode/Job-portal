@@ -85,8 +85,8 @@ export const login = async (req, res) => {
       .cookie("token", token, {
         httpOnly: true,
         secure: false,       // ✅ for localhost
-        sameSite: "lax",     // ✅ FIX
-        maxAge: 24 * 60 * 60 * 1000,
+        sameSite: "strict",     // ✅ FIX
+        maxAge:1 * 24 * 60 * 60 * 1000,
       })
       .json({ success: true, message: `Welcome back ${user.fullname}`, user: safeUser });
   } catch (error) {
