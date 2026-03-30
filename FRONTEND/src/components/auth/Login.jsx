@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "../shared/Navbar.jsx";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
@@ -15,7 +15,7 @@ import { Loader2 } from "lucide-react";
 const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { loading } = useSelector((store) => store.auth);
+  const { loading,user } = useSelector((store) => store.auth);
 
   const [input, setInput] = useState({
     email: "",
@@ -49,6 +49,11 @@ const Login = () => {
       dispatch(setLoading(false));
     }
   };
+   useEffect(() => {
+    if (user){
+      navigate("/");  
+    }
+  }, [user, navigate]);
 
   return (
     <div>

@@ -1,11 +1,23 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import Navbar from './shared/Navbar'
-import Job from './Job'
+import Job from './Job';
+import { useSelector } from 'react-redux';
+import { setSearchedQuery } from '@/redux/jobSlice';
+import { useDispatch } from 'react-redux';
+import useGetAllJobs from '@/hooks/useGetAllJobs';
 
-const randomJobs = [1, 2, 45];
+// const randomJobs = [1, 2, 45];
 
 const Browse = () => {
-    const {allJobs} = useSelector(store => store.job);
+    useGetAllJobs();
+    const {allJobs} = useSelector(store=>store.job);
+    const dispatch = useDispatch();
+    useEffect(()=>{
+        return () => {
+            dispatch(setSearchedQuery(""));
+        }
+    }, []);
+
     return (
         <div>
             <Navbar />
@@ -15,7 +27,7 @@ const Browse = () => {
                     {
                         allJobs.map((job) => {
                             return (
-                                <Job key={job._id} />
+                                <Job key={job._id} job={job}/>
                             )
                         })
                     }

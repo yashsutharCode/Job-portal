@@ -10,13 +10,14 @@ import { toast } from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { setLoading } from "../../redux/authSlice";
 import { Loader2 } from "lucide-react";
+import { useEffect } from "react";
 
 const USER_API_END_POINT = "http://localhost:8000/api/v1/user";
 
 const Signup = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { loading } = useSelector((store) => store.auth);
+  const { loading,user } = useSelector((store) => store.auth);
 
   const [input, setInput] = useState({
     fullname: "",
@@ -64,7 +65,12 @@ const Signup = () => {
       dispatch(setLoading(false));
     }
   };
-
+    useEffect(() => {
+       if (user){
+         navigate("/");  
+       }
+     }, [user, navigate]);
+   
   return (
     <div>
       <Navbar />
