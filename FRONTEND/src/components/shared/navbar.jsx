@@ -38,6 +38,7 @@ const Navbar = () => {
                 <>
                     <li><Link to="/admin/companies" className="hover:text-[#6A38C2] transition-colors">Companies</Link></li>
                     <li><Link to="/admin/jobs" className="hover:text-[#6A38C2] transition-colors">Jobs</Link></li>
+                    <li><Link to="/admin/applications" className="hover:text-[#6A38C2] transition-colors">Applications</Link></li>
                 </>
             ) : (
                 <>
