@@ -13,7 +13,6 @@ import { setUser } from "../../redux/authSlice";
 const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const { user } = useSelector((store) => store.auth);
-    const { singleJob } = useSelector((store) => store.job);
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
@@ -32,15 +31,6 @@ const Navbar = () => {
         }
     };
 
- const handleApplicantsClick = () => {
-    if (singleJob?._id) {
-        navigate(`/admin/jobs/${singleJob._id}/applicants`);
-    } else {
-        toast.error("Select a job from the list first.");
-        navigate("/admin/jobs"); // This is why you keep seeing "Admin Jobs"
-    }
-};
-
     // Shared navigation links based on role
     const NavLinks = () => (
         <>
@@ -48,11 +38,6 @@ const Navbar = () => {
                 <>
                     <li><Link to="/admin/companies" className="hover:text-[#6A38C2] transition-colors">Companies</Link></li>
                     <li><Link to="/admin/jobs" className="hover:text-[#6A38C2] transition-colors">Jobs</Link></li>
-                    <li>
-                        <button onClick={handleApplicantsClick} className="hover:text-[#6A38C2] transition-colors cursor-pointer">
-                            Applicants
-                        </button>
-                    </li>
                 </>
             ) : (
                 <>
@@ -135,7 +120,7 @@ const Navbar = () => {
     );
 };
 
-// Extracted for cleaner code
+// User Profile Popover Component
 const UserPopover = ({ user, logoutHandler }) => (
     <Popover>
         <PopoverTrigger asChild>
