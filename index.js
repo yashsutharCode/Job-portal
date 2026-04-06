@@ -43,10 +43,9 @@ app.use(express.static(path.join(_dirname, "/FRONTEND/dist")));
 
 // 5. The "Catch-All" Route
 // If any request doesn't match the API routes above, send the React index.html
-app.get('*', (req, res) => {
+app.get(/^\/(?!api).*/, (req, res) => {
     res.sendFile(path.resolve(_dirname, "FRONTEND", "dist", "index.html"));
 });
-
 // 6. Start Server
 app.listen(PORT, () => {
     connectDB();
