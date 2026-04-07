@@ -8,7 +8,8 @@ const LatestJobCards = ({ job }) => {
   const navigate = useNavigate();
   const { user } = useSelector((store) => store.auth);
 
-  const isApplied = job?.applications?.some(
+  // FIX: Only evaluate isApplied if user exists
+  const isApplied = user && job?.applications?.some(
     (app) => (app.applicant === user?._id || app === user?._id)
   );
 
@@ -25,7 +26,8 @@ const LatestJobCards = ({ job }) => {
             <p className="text-xs font-medium">{job?.location || "India"}</p>
           </div>
         </div>
-        {isApplied && (
+        {/* Only show badge if user is logged in and has applied */}
+        {user && isApplied && (
           <Badge className="bg-green-50 text-green-600 border-green-200 px-3 py-1" variant="outline">
             Applied
           </Badge>

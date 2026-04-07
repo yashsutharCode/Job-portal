@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom"; // Added useNavigate
 import { JOB_API_END_POINT, APPLICATION_API_END_POINT } from "@/utils/constant";
 import { setSingleJob } from "@/redux/jobSlice";
 import { useDispatch, useSelector } from "react-redux";
@@ -13,18 +13,33 @@ import Navbar from "./shared/navbar";
 const JobDescription = () => {
     const { id: jobId } = useParams();
     const dispatch = useDispatch();
+    const navigate = useNavigate(); // Hook for redirection
+    
     const { singleJob } = useSelector((store) => store.job);
     const { user } = useSelector((store) => store.auth);
 
-    const [isApplied, setApplied] = useState(false);
+    // Initial state based on whether user is logged in AND has applied
+    const initialAppliedStatus = singleJob?.applications?.some(app => app.applicant === user?._id) || false;
+    const [isApplied, setApplied] = useState(initialAppliedStatus);
     const [checkingStatus, setCheckingStatus] = useState(true);
 
     const applyJobHandler = async () => {
+        // FIX 1: If no user is logged in, show toast and redirect to login
+        if (!user) {
+            toast.error("Please login or signup to apply for this job!");
+            navigate("/login");
+            return;
+        }
+
         try {
             const res = await axios.get(`${APPLICATION_API_END_POINT}/apply/${jobId}`, { withCredentials: true });
             if (res.data.success) {
                 setApplied(true);
-                const updatedSingleJob = { ...singleJob, applications: [...(singleJob?.applications || []), { applicant: user?._id }] };
+                // Update local Redux store so the UI stays in sync
+                const updatedSingleJob = { 
+                    ...singleJob, 
+                    applications: [...(singleJob?.applications || []), { applicant: user?._id }] 
+                };
                 dispatch(setSingleJob(updatedSingleJob));
                 toast.success(res.data.message);
             }
@@ -40,14 +55,19 @@ const JobDescription = () => {
                 const res = await axios.get(`${JOB_API_END_POINT}/get/${jobId}`, { withCredentials: true });
                 if (res.data.success) {
                     dispatch(setSingleJob(res.data.job));
-                    const applied = res.data.job?.applications?.some(app => app.applicant === user?._id);
-                    setApplied(applied);
+                    
+                    // FIX 2: Only mark as applied if the user actually exists
+                    const applied = user && res.data.job?.applications?.some(app => app.applicant === user?._id);
+                    setApplied(!!applied);
                 }
-            } catch (error) { console.log(error); } 
-            finally { setCheckingStatus(false); }
+            } catch (error) { 
+                console.log(error); 
+            } finally { 
+                setCheckingStatus(false); 
+            }
         };
         if (jobId) fetchSingleJob();
-    }, [jobId, dispatch, user?._id]);
+    }, [jobId, dispatch, user?._id]); // Effect runs when user logs in or out
 
     if (!singleJob) return <div className="flex justify-center items-center h-screen text-gray-500 italic">Loading details...</div>;
 
@@ -115,7 +135,6 @@ const JobDescription = () => {
     );
 };
 
-// Reusable Helper Component
 const DetailItem = ({ icon, label, value }) => (
     <div className="flex items-start gap-3">
         <div className="p-2 bg-gray-100 rounded-lg text-gray-600 mt-0.5">{icon}</div>
