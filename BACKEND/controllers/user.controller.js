@@ -6,173 +6,107 @@ import getDataUri from "../utils/datauri.js";
 
 /* ================= REGISTER ================= */
 export const register = async (req, res) => {
-  try {
-    const { fullname, email, phoneNumber, password, role } = req.body;
+    try {
+        const { fullname, email, phoneNumber, password, role } = req.body;
 
-    if (!fullname || !email || !phoneNumber || !password || !role) {
-      return res.status(400).json({ success: false, message: "All fields are required" });
+        if (!fullname || !email || !phoneNumber || !password || !role) {
+            return res.status(400).json({ success: false, message: "All fields are required" });
+        }
+
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ success: false, message: "User already exists" });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        let profilePhoto = "";
+        if (req.file) {
+            const fileUri = getDataUri(req.file);
+            // resource_type: "auto" is needed for both images and documents
+            const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
+                resource_type: "auto"
+            });
+            profilePhoto = cloudResponse.secure_url;
+        }
+
+        await User.create({
+            fullname,
+            email,
+            phoneNumber,
+            password: hashedPassword,
+            role,
+            profile: { profilePhoto },
+        });
+
+        return res.status(201).json({ success: true, message: "Account created successfully" });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ success: false, message: "Server error" });
     }
-
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ success: false, message: "User already exists with this email" });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    let profilePhoto = "";
-    if (req.file) {
-      const fileUri = getDataUri(req.file);
-      // FIX: Added resource_type: "auto" for profile pictures/documents
-      const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
-        resource_type: "auto"
-      });
-      profilePhoto = cloudResponse.secure_url;
-    }
-
-    await User.create({
-      fullname,
-      email,
-      phoneNumber,
-      password: hashedPassword,
-      role,
-      profile: {
-        profilePhoto,
-      },
-    });
-
-    return res.status(201).json({ success: true, message: "Account created successfully" });
-  } catch (error) {
-    console.log("REGISTER ERROR:", error);
-    return res.status(500).json({ success: false, message: "Server error" });
-  }
 };
 
-/* ================= LOGIN ================= */
+/* ================= LOGIN & LOGOUT (Standard Logic) ================= */
 export const login = async (req, res) => {
-  try {
-    const { email, password, role } = req.body;
-
-    if (!email || !password || !role) {
-      return res.status(400).json({ success: false, message: "All fields are required" });
-    }
-
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ success: false, message: "Incorrect email or password" });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ success: false, message: "Incorrect email or password" });
-    }
-
-    if (role !== user.role) {
-      return res.status(400).json({ success: false, message: "Account doesn't exist with this role" });
-    }
-
-    const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, {
-      expiresIn: "1d",
-    });
-
-    const safeUser = {
-      _id: user._id,
-      fullname: user.fullname,
-      email: user.email,
-      phoneNumber: user.phoneNumber,
-      role: user.role,
-      profile: user.profile,
-    };
-    
-    return res
-      .status(200)
-      .cookie("token", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production", // Security enhancement
-        sameSite: "strict",
-        maxAge: 1 * 24 * 60 * 60 * 1000,
-      })
-      .json({ success: true, message: `Welcome back ${user.fullname}`, user: safeUser });
-  } catch (error) {
-    console.log("LOGIN ERROR:", error);
-    return res.status(500).json({ success: false, message: "Server error" });
-  }
+    try {
+        const { email, password, role } = req.body;
+        if (!email || !password || !role) {
+            return res.status(400).json({ success: false, message: "All fields are required" });
+        }
+        const user = await User.findOne({ email });
+        if (!user || !(await bcrypt.compare(password, user.password))) {
+            return res.status(400).json({ success: false, message: "Incorrect email or password" });
+        }
+        if (role !== user.role) {
+            return res.status(400).json({ success: false, message: "Incorrect role" });
+        }
+        const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, { expiresIn: "1d" });
+        return res.status(200).cookie("token", token, { httpOnly: true, sameSite: "strict", maxAge: 86400000 }).json({
+            success: true,
+            message: `Welcome back ${user.fullname}`,
+            user: { _id: user._id, fullname: user.fullname, email: user.email, role: user.role, profile: user.profile }
+        });
+    } catch (error) { return res.status(500).json({ success: false }); }
 };
 
-/* ================= LOGOUT ================= */
 export const logout = async (req, res) => {
-  try {
-    return res
-      .status(200)
-      .cookie("token", "", { maxAge: 0 })
-      .json({ success: true, message: "Logged out successfully" });
-  } catch (error) {
-    console.log("LOGOUT ERROR:", error);
-    return res.status(500).json({ success: false, message: "Server error" });
-  }
+    return res.status(200).cookie("token", "", { maxAge: 0 }).json({ success: true, message: "Logged out" });
 };
 
 /* ================= UPDATE PROFILE ================= */
 export const updateProfile = async (req, res) => {
-  try {
-    const { fullname, email, phoneNumber, bio, skills } = req.body;
-    const file = req.file;
-    const userId = req.id; 
+    try {
+        const { fullname, email, phoneNumber, bio, skills } = req.body;
+        const file = req.file;
+        const userId = req.id; 
 
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+        if (fullname) user.fullname = fullname;
+        if (email) user.email = email;
+        if (phoneNumber) user.phoneNumber = phoneNumber;
+        if (bio) user.profile.bio = bio;
+        if (skills) user.profile.skills = skills.split(",").map(s => s.trim());
+
+        if (file) {
+            const fileUri = getDataUri(file);
+            // CRITICAL FIX: resource_type: "auto" enables PDF support
+            const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
+                resource_type: "auto" 
+            }); 
+            user.profile.resume = cloudResponse.secure_url;
+            user.profile.resumeOriginalName = file.originalname;
+        }
+
+        await user.save();
+        return res.status(200).json({
+            success: true, 
+            message: "Profile updated", 
+            user: { _id: user._id, fullname: user.fullname, email: user.email, role: user.role, profile: user.profile }
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ success: false });
     }
-
-    if (email && email !== user.email) {
-      const emailExists = await User.findOne({ email });
-      if (emailExists) {
-        return res.status(400).json({ success: false, message: "Email already in use" });
-      }
-      user.email = email;
-    }
-
-    if (fullname) user.fullname = fullname;
-    if (phoneNumber) user.phoneNumber = phoneNumber;
-    if (bio) user.profile.bio = bio;
-
-    if (skills) {
-      user.profile.skills = Array.isArray(skills)
-        ? skills
-        : skills.split(",").map((s) => s.trim());
-    }
-
-    if (file) {
-      const fileUri = getDataUri(file);
-      
-      // CRITICAL FIX: Added resource_type: "auto"
-      // This allows Cloudinary to accept PDFs and generates a public URL.
-      const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
-        resource_type: "auto" 
-      }); 
-
-      user.profile.resume = cloudResponse.secure_url;
-      user.profile.resumeOriginalName = file.originalname;
-    }
-
-    await user.save();
-
-    const safeUser = {
-      _id: user._id,
-      fullname: user.fullname,
-      email: user.email,
-      phoneNumber: user.phoneNumber,
-      role: user.role,
-      profile: user.profile,
-    };
-
-    return res.status(200).json({
-      success: true,
-      message: "Profile updated successfully",
-      user: safeUser,
-    });
-  } catch (error) {
-    console.log("UPDATE PROFILE ERROR:", error);
-    return res.status(500).json({ success: false, message: "Server error" });
-  }
 };
