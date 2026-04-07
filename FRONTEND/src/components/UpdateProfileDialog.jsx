@@ -76,7 +76,7 @@ const UpdateProfileDialog = ({ open, setOpen }) => {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogContent 
-                className="w-[95%] sm:max-w-[425px] bg-white rounded-2xl p-0 overflow-hidden border-none shadow-2xl" 
+                className="w-[95%] sm:max-w-md bg-white rounded-2xl p-0 overflow-hidden border-none shadow-2xl" 
                 onInteractOutside={() => setOpen(false)}
             >
                 <DialogHeader className="px-6 pt-5 pb-3 bg-gray-50 border-b border-gray-100">

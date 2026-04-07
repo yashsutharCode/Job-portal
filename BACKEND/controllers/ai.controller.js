@@ -5,8 +5,14 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 export const getMatchScore = async (req, res) => {
     try {
         const { resumeSkills, jobDescription } = req.body;
-        
-        // Use gemini-1.5-flash for faster, cheaper production responses
+
+        if (!resumeSkills || !jobDescription) {
+            return res.status(400).json({ 
+                message: "Missing skills or job description", 
+                success: false 
+            });
+        }
+
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         const prompt = `
@@ -15,7 +21,7 @@ export const getMatchScore = async (req, res) => {
             User Skills: ${resumeSkills}
             Job Requirements: ${jobDescription}
 
-            Return ONLY a raw JSON object (no markdown, no backticks) with:
+            Return ONLY a valid raw JSON object. No markdown, no backticks.
             {
               "score": (number 0-100),
               "feedback": (15-word summary),
@@ -27,7 +33,7 @@ export const getMatchScore = async (req, res) => {
         const response = await result.response;
         let text = response.text();
 
-        // Robust JSON Cleaning
+        // CORRECTION: Robust cleaning of AI response
         const cleanJson = text.replace(/```json|```/g, "").trim();
         const parsedData = JSON.parse(cleanJson);
         
@@ -36,10 +42,9 @@ export const getMatchScore = async (req, res) => {
             success: true
         });
     } catch (error) {
-        console.error("AI matching error:", error);
+        console.error("AI Matching Error:", error);
         return res.status(500).json({ 
-            message: "AI Analysis failed", 
-            error: error.message,
+            message: "AI Analysis failed to parse. Check API key and logs.", 
             success: false 
         });
     }
