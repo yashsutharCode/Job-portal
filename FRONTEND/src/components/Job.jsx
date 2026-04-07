@@ -4,9 +4,11 @@ import { Bookmark } from "lucide-react";
 import { Avatar, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const Job = ({ job }) => {
   const navigate = useNavigate();
+  const { user } = useSelector((store) => store.auth);
 
   const daysAgoFunction = (mongodbTime) => {
     if (!mongodbTime) return 0;
@@ -14,6 +16,16 @@ const Job = ({ job }) => {
     const createdAt = new Date(mongodbTime);
     const timeDifference = currentTime - createdAt;
     return Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+  };
+
+  const handleApplyClick = () => {
+    if (!user) {
+      // Prompt to login/signup if they try to interact
+      alert("Please login or signup to view details and apply!");
+      navigate("/login");
+    } else {
+      navigate(`/description/${job?._id}`);
+    }
   };
 
   return (
@@ -32,7 +44,6 @@ const Job = ({ job }) => {
       <div className="flex items-center gap-2 my-2">
         <Button className="p-6" variant="outline" size="icon">
           <Avatar>
-            {/* Use the dynamic logo from your database, with a fallback just in case */}
             <AvatarImage
               src={job?.company?.logo || "https://toppng.com/uploads/preview/free-logo-design-11551057495oqoep79juj.png"}
             />
@@ -46,7 +57,7 @@ const Job = ({ job }) => {
 
       <div>
         <h1 className="font-bold text-lg my-2">{job?.title}</h1>
-        <p className="text-sm text-gray-600">{job?.description}</p>
+        <p className="text-sm text-gray-600 line-clamp-2">{job?.description}</p>
       </div>
 
       <div className="flex items-center gap-2 mt-4">
@@ -63,12 +74,14 @@ const Job = ({ job }) => {
 
       <div className="flex items-center gap-4 mt-4">
         <Button
-          onClick={() => navigate(`/description/${job?._id}`)}
+          onClick={handleApplyClick}
           variant="outline"
         >
           Details
         </Button>
-        <Button className="bg-[#7209b7]">Save For Later</Button>
+        <Button className="bg-[#7209b7]" onClick={handleApplyClick}>
+          Apply Now
+        </Button>
       </div>
     </div>
   );
