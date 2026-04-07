@@ -6,12 +6,13 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon index.js",
-    "build" : "npm install && npm install --prefix FRONTEND && npm run build --prefix FRONTEND",
-    "start" : "nodemon index.js"
+    "build": "npm install && npm install --prefix FRONTEND && npm run build --prefix FRONTEND",
+    "start": "nodemon index.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.9.0",
     "cookie-parser": "^1.4.7",
