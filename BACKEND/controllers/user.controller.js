@@ -23,7 +23,10 @@ export const register = async (req, res) => {
     let profilePhoto = "";
     if (req.file) {
       const fileUri = getDataUri(req.file);
-      const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
+      // FIX: Added resource_type: "auto" for profile pictures/documents
+      const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
+        resource_type: "auto"
+      });
       profilePhoto = cloudResponse.secure_url;
     }
 
@@ -80,13 +83,14 @@ export const login = async (req, res) => {
       role: user.role,
       profile: user.profile,
     };
+    
     return res
       .status(200)
       .cookie("token", token, {
         httpOnly: true,
-        secure: false,       // ✅ for localhost
-        sameSite: "strict",     // ✅ FIX
-        maxAge:1 * 24 * 60 * 60 * 1000,
+        secure: process.env.NODE_ENV === "production", // Security enhancement
+        sameSite: "strict",
+        maxAge: 1 * 24 * 60 * 60 * 1000,
       })
       .json({ success: true, message: `Welcome back ${user.fullname}`, user: safeUser });
   } catch (error) {
@@ -113,14 +117,13 @@ export const updateProfile = async (req, res) => {
   try {
     const { fullname, email, phoneNumber, bio, skills } = req.body;
     const file = req.file;
-    const userId = req.id; // from auth middleware
+    const userId = req.id; 
 
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    // Prevent duplicate email
     if (email && email !== user.email) {
       const emailExists = await User.findOne({ email });
       if (emailExists) {
@@ -141,7 +144,13 @@ export const updateProfile = async (req, res) => {
 
     if (file) {
       const fileUri = getDataUri(file);
-      const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
+      
+      // CRITICAL FIX: Added resource_type: "auto"
+      // This allows Cloudinary to accept PDFs and generates a public URL.
+      const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
+        resource_type: "auto" 
+      }); 
+
       user.profile.resume = cloudResponse.secure_url;
       user.profile.resumeOriginalName = file.originalname;
     }
