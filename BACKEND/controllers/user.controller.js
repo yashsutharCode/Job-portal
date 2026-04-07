@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import cloudinary from "../utils/cloudinary.js";
 import getDataUri from "../utils/datauri.js";
 
-/* ================= REGISTER ================= */
+// ================= REGISTER =================
 export const register = async (req, res) => {
     try {
         const { fullname, email, phoneNumber, password, role } = req.body;
@@ -23,7 +23,7 @@ export const register = async (req, res) => {
         let profilePhoto = "";
         if (req.file) {
             const fileUri = getDataUri(req.file);
-            // resource_type: "auto" is needed for both images and documents
+            // CORRECTION: resource_type: "auto" allows PDF/Doc support
             const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
                 resource_type: "auto"
             });
@@ -46,7 +46,7 @@ export const register = async (req, res) => {
     }
 };
 
-/* ================= LOGIN & LOGOUT (Standard Logic) ================= */
+// ================= LOGIN & LOGOUT =================
 export const login = async (req, res) => {
     try {
         const { email, password, role } = req.body;
@@ -73,7 +73,7 @@ export const logout = async (req, res) => {
     return res.status(200).cookie("token", "", { maxAge: 0 }).json({ success: true, message: "Logged out" });
 };
 
-/* ================= UPDATE PROFILE ================= */
+// ================= UPDATE PROFILE =================
 export const updateProfile = async (req, res) => {
     try {
         const { fullname, email, phoneNumber, bio, skills } = req.body;
@@ -91,7 +91,7 @@ export const updateProfile = async (req, res) => {
 
         if (file) {
             const fileUri = getDataUri(file);
-            // CRITICAL FIX: resource_type: "auto" enables PDF support
+            // CORRECTION: resource_type: "auto" is mandatory for PDFs to be accessible via secure_url
             const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
                 resource_type: "auto" 
             }); 

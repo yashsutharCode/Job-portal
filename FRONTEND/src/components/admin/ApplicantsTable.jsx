@@ -71,6 +71,7 @@ const ApplicantsTable = () => {
 
                             <div className="flex items-center justify-between pt-3 border-t border-gray-50">
                                 {item?.applicant?.profile?.resume ? (
+                                    // CORRECTION: Added target="_blank" for browser security
                                     <a 
                                         href={item?.applicant?.profile?.resume} 
                                         target="_blank" 
@@ -98,18 +99,16 @@ const ApplicantsTable = () => {
                 )}
             </div>
 
-            {/* --- DESKTOP VIEW: WITH ADDED PADDING --- */}
+            {/* --- DESKTOP VIEW --- */}
             <div className="hidden md:block border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
                 <Table>
                     <TableHeader className="bg-gray-50">
                         <TableRow>
-                            {/* Added pl-6 for left-side breathing room */}
                             <TableHead className="pl-6">Full Name</TableHead>
                             <TableHead>Email</TableHead>
                             <TableHead>Contact</TableHead>
                             <TableHead>Resume</TableHead>
                             <TableHead>Date</TableHead>
-                            {/* Added pr-6 for right-side breathing room */}
                             <TableHead className="text-right pr-6">Action</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -117,19 +116,18 @@ const ApplicantsTable = () => {
                         {applicants && applicants.length > 0 ? (
                             applicants.map((item) => (
                                 <TableRow key={item._id} className="hover:bg-gray-50/50 transition-colors">
-                                    {/* Added pl-6 for gita name alignment */}
                                     <TableCell className="font-medium pl-6">{item?.applicant?.fullname}</TableCell>
                                     <TableCell>{item?.applicant?.email}</TableCell>
                                     <TableCell>{item?.applicant?.phoneNumber || "N/A"}</TableCell>
                                     <TableCell>
                                         {item?.applicant?.profile?.resume ? (
+                                            // CORRECTION: Open resume in new tab
                                             <a href={item?.applicant?.profile?.resume} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center gap-1">
                                                 <FileText size={16} /> <span>View</span>
                                             </a>
                                         ) : <span className="text-gray-400 italic">NA</span>}
                                     </TableCell>
                                     <TableCell>{item?.createdAt?.split("T")[0]}</TableCell>
-                                    {/* Added pr-6 for three dots alignment */}
                                     <TableCell className="text-right pr-6">
                                         <div className="flex items-center justify-end gap-3">
                                             <Badge className={`text-[10px] font-bold px-2 py-0.5 rounded-full border-none capitalize
