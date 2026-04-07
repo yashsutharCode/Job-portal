@@ -114,7 +114,7 @@ const Profile = () => {
                                         href={user?.profile?.resume}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="bg-purple-800 border border-purple-800 px-4 py-2 rounded-lg text-purple-800 text-xs font-bold hover:bg-purple-50 transition-colors shadow-sm"
+                                       className="bg-white border-2 border-gray-600 px-4 py-2 rounded-lg text-gray-800 text-xs font-bold hover:bg-gray-50 hover:border-gray-900 transition-all duration-300 shadow-sm"
                                     >
                                         View File
                                     </a>
