@@ -2,6 +2,8 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
+// BACKEND/controllers/ai.controller.js
+
 export const getMatchScore = async (req, res) => {
     try {
         const { resumeSkills, jobDescription } = req.body;
@@ -21,21 +23,23 @@ export const getMatchScore = async (req, res) => {
             User Skills: ${resumeSkills}
             Job Requirements: ${jobDescription}
 
-            Return ONLY a valid raw JSON object. No markdown, no backticks.
+            Return ONLY a valid JSON object. 
             {
-              "score": (number 0-100),
-              "feedback": (15-word summary),
-              "missingSkills": (array of top 3 missing skills)
+              "score": (number),
+              "feedback": (string),
+              "missingSkills": (array)
             }
         `;
 
         const result = await model.generateContent(prompt);
-        const response = await result.response;
-        let text = response.text();
+        const text = result.response.text();
 
-        // CORRECTION: Robust cleaning of AI response
-        const cleanJson = text.replace(/```json|```/g, "").trim();
-        const parsedData = JSON.parse(cleanJson);
+        // IMPROVED CLEANING: Find the first '{' and last '}' to isolate JSON
+        const start = text.indexOf('{');
+        const end = text.lastIndexOf('}') + 1;
+        const jsonString = text.substring(start, end);
+        
+        const parsedData = JSON.parse(jsonString);
         
         return res.status(200).json({
             data: parsedData,
@@ -44,7 +48,7 @@ export const getMatchScore = async (req, res) => {
     } catch (error) {
         console.error("AI Matching Error:", error);
         return res.status(500).json({ 
-            message: "AI Analysis failed to parse. Check API key and logs.", 
+            message: "AI Analysis failed. Ensure GEMINI_API_KEY is set in Render Environment.", 
             success: false 
         });
     }
