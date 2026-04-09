@@ -20,20 +20,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // MULTI-ORIGIN CORS FIX
-// Allows local testing (localhost:5173) and production (onrender.com)
 const corsOptions = {
-    origin: (origin, callback) => {
-        const allowedOrigins = [
-            "http://localhost:5173",
-            "https://job-find-8.onrender.com"
-        ];
-        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            callback(new Error("Not allowed by CORS"));
-        }
-    },
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    origin: [
+        "http://localhost:5173",           // Local Development
+        "https://job-find-8.onrender.com"  // Production
+    ],
     credentials: true,
 };
 app.use(cors(corsOptions));
