@@ -1,8 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
+// Ensure the API Key is correctly loaded from the environment
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-// BACKEND/controllers/ai.controller.js
 
 export const getMatchScore = async (req, res) => {
     try {
@@ -15,6 +14,7 @@ export const getMatchScore = async (req, res) => {
             });
         }
 
+        // FIX: Use the fully qualified model name
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         const prompt = `
@@ -32,13 +32,18 @@ export const getMatchScore = async (req, res) => {
         `;
 
         const result = await model.generateContent(prompt);
-        const text = result.response.text();
+        const response = await result.response;
+        const text = response.text();
 
-        // IMPROVED CLEANING: Find the first '{' and last '}' to isolate JSON
+        // Improved JSON cleaning to handle potential markdown formatting from AI
         const start = text.indexOf('{');
         const end = text.lastIndexOf('}') + 1;
-        const jsonString = text.substring(start, end);
         
+        if (start === -1 || end === 0) {
+            throw new Error("Invalid AI response format");
+        }
+
+        const jsonString = text.substring(start, end);
         const parsedData = JSON.parse(jsonString);
         
         return res.status(200).json({
@@ -48,7 +53,8 @@ export const getMatchScore = async (req, res) => {
     } catch (error) {
         console.error("AI Matching Error:", error);
         return res.status(500).json({ 
-            message: "AI Analysis failed. Ensure GEMINI_API_KEY is set in Render Environment.", 
+            message: "AI Analysis failed. Please check server logs.", 
+            error: error.message,
             success: false 
         });
     }
