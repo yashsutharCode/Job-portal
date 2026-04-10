@@ -9,6 +9,7 @@ import {
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
+import { Textarea } from "./ui/textarea"; // Recommended for the long skills paragraph
 import { Loader2, ExternalLink } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import axios from "axios";
@@ -20,6 +21,8 @@ const UpdateProfileDialog = ({ open, setOpen }) => {
   const { user } = useSelector((store) => store.auth);
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
+
+  // Initializing state with all required fields
   const [input, setInput] = useState({
     fullname: "",
     email: "",
@@ -34,9 +37,13 @@ const UpdateProfileDialog = ({ open, setOpen }) => {
       setInput({
         fullname: user?.fullname || "",
         email: user?.email || "",
-        phoneNumber: user?.phoneNumber || "",
+        // Fix: Checks both user and profile object for the contact number [cite: 1, 3]
+        phoneNumber: user?.phoneNumber || user?.profile?.phoneNumber || "", 
         bio: user?.profile?.bio || "",
-        skills: user?.profile?.skills ? user.profile.skills.join(", ") : "",
+        // Formats skills array back to string if needed, or uses the detailed paragraph
+        skills: Array.isArray(user?.profile?.skills) 
+          ? user.profile.skills.join(", ") 
+          : user?.profile?.skills || "",
         file: null,
       });
     }
@@ -89,7 +96,6 @@ const UpdateProfileDialog = ({ open, setOpen }) => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      {/* Increased max-width slightly to accommodate more fields comfortably */}
       <DialogContent className="sm:max-w-106.25 bg-white rounded-2xl shadow-2xl p-6 overflow-y-auto max-h-[90vh]">
         <DialogHeader>
           <DialogTitle className="font-bold text-gray-800">
@@ -101,7 +107,6 @@ const UpdateProfileDialog = ({ open, setOpen }) => {
         </DialogHeader>
         <form onSubmit={submitHandler} className="space-y-3">
           
-          {/* Full Name */}
           <div className="space-y-1">
             <Label className="text-[10px] font-bold uppercase text-gray-500">Full Name</Label>
             <Input
@@ -112,7 +117,6 @@ const UpdateProfileDialog = ({ open, setOpen }) => {
             />
           </div>
 
-          {/* Email */}
           <div className="space-y-1">
             <Label className="text-[10px] font-bold uppercase text-gray-500">Email</Label>
             <Input
@@ -124,7 +128,6 @@ const UpdateProfileDialog = ({ open, setOpen }) => {
             />
           </div>
 
-          {/* Phone Number */}
           <div className="space-y-1">
             <Label className="text-[10px] font-bold uppercase text-gray-500">Phone Number</Label>
             <Input
@@ -132,10 +135,10 @@ const UpdateProfileDialog = ({ open, setOpen }) => {
               value={input.phoneNumber}
               onChange={changeEventHandler}
               className="h-9"
+              placeholder="e.g. +91 7877209020"
             />
           </div>
 
-          {/* Bio */}
           <div className="space-y-1">
             <Label className="text-[10px] font-bold uppercase text-gray-500">Bio</Label>
             <Input
@@ -143,23 +146,22 @@ const UpdateProfileDialog = ({ open, setOpen }) => {
               value={input.bio}
               onChange={changeEventHandler}
               className="h-9"
-              placeholder="Tell us about yourself..."
+              placeholder="Full Stack MERN Developer..."
             />
           </div>
 
-          {/* Skills */}
           <div className="space-y-1">
-            <Label className="text-[10px] font-bold uppercase text-gray-500">Skills</Label>
-            <Input
+            <Label className="text-[10px] font-bold uppercase text-gray-500">Detailed Skills</Label>
+            {/* Using Textarea for the long skills paragraph we generated */}
+            <Textarea
               name="skills"
               value={input.skills}
               onChange={changeEventHandler}
-              className="h-9"
-              placeholder="React, Node, etc."
+              className="min-h-25 text-xs"
+              placeholder="Paste your generated skills paragraph here..."
             />
           </div>
 
-          {/* Resume Upload */}
           <div className="space-y-1">
             <Label className="text-[10px] font-bold uppercase text-gray-500">Resume (PDF)</Label>
             <Input
