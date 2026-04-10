@@ -44,11 +44,12 @@ const UpdateProfileDialog = ({ open, setOpen }) => {
 
   const changeEventHandler = (e) =>
     setInput({ ...input, [e.target.name]: e.target.value });
+
   const fileChangeHandler = (e) => {
     const file = e.target.files?.[0];
     if (file && file.type !== "application/pdf") {
       toast.error("Please upload a PDF file for your resume.");
-      e.target.value = ""; // Reset the input
+      e.target.value = ""; 
       return;
     }
     setInput({ ...input, file });
@@ -72,7 +73,7 @@ const UpdateProfileDialog = ({ open, setOpen }) => {
         {
           withCredentials: true,
           headers: { "Content-Type": "multipart/form-data" },
-        },
+        }
       );
       if (res.data.success) {
         dispatch(setUser(res.data.user));
@@ -88,7 +89,8 @@ const UpdateProfileDialog = ({ open, setOpen }) => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-md bg-white rounded-2xl shadow-2xl p-6">
+      {/* Increased max-width slightly to accommodate more fields comfortably */}
+      <DialogContent className="sm:max-w-106.25 bg-white rounded-2xl shadow-2xl p-6 overflow-y-auto max-h-[90vh]">
         <DialogHeader>
           <DialogTitle className="font-bold text-gray-800">
             Update Profile
@@ -97,11 +99,11 @@ const UpdateProfileDialog = ({ open, setOpen }) => {
             Update your career details and resume.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={submitHandler} className="space-y-4">
+        <form onSubmit={submitHandler} className="space-y-3">
+          
+          {/* Full Name */}
           <div className="space-y-1">
-            <Label className="text-[10px] font-bold uppercase text-gray-500">
-              Full Name
-            </Label>
+            <Label className="text-[10px] font-bold uppercase text-gray-500">Full Name</Label>
             <Input
               name="fullname"
               value={input.fullname}
@@ -109,10 +111,45 @@ const UpdateProfileDialog = ({ open, setOpen }) => {
               className="h-9"
             />
           </div>
+
+          {/* Email */}
           <div className="space-y-1">
-            <Label className="text-[10px] font-bold uppercase text-gray-500">
-              Skills
-            </Label>
+            <Label className="text-[10px] font-bold uppercase text-gray-500">Email</Label>
+            <Input
+              type="email"
+              name="email"
+              value={input.email}
+              onChange={changeEventHandler}
+              className="h-9"
+            />
+          </div>
+
+          {/* Phone Number */}
+          <div className="space-y-1">
+            <Label className="text-[10px] font-bold uppercase text-gray-500">Phone Number</Label>
+            <Input
+              name="phoneNumber"
+              value={input.phoneNumber}
+              onChange={changeEventHandler}
+              className="h-9"
+            />
+          </div>
+
+          {/* Bio */}
+          <div className="space-y-1">
+            <Label className="text-[10px] font-bold uppercase text-gray-500">Bio</Label>
+            <Input
+              name="bio"
+              value={input.bio}
+              onChange={changeEventHandler}
+              className="h-9"
+              placeholder="Tell us about yourself..."
+            />
+          </div>
+
+          {/* Skills */}
+          <div className="space-y-1">
+            <Label className="text-[10px] font-bold uppercase text-gray-500">Skills</Label>
             <Input
               name="skills"
               value={input.skills}
@@ -121,10 +158,10 @@ const UpdateProfileDialog = ({ open, setOpen }) => {
               placeholder="React, Node, etc."
             />
           </div>
+
+          {/* Resume Upload */}
           <div className="space-y-1">
-            <Label className="text-[10px] font-bold uppercase text-gray-500">
-              Resume (PDF)
-            </Label>
+            <Label className="text-[10px] font-bold uppercase text-gray-500">Resume (PDF)</Label>
             <Input
               type="file"
               accept="application/pdf"
@@ -142,9 +179,10 @@ const UpdateProfileDialog = ({ open, setOpen }) => {
               </a>
             )}
           </div>
+
           <Button
             type="submit"
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold h-10 rounded-xl"
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold h-10 rounded-xl mt-4"
             disabled={loading}
           >
             {loading ? (
