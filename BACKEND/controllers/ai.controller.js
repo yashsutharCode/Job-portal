@@ -27,9 +27,9 @@ Return ONLY valid JSON:
 }
 `;
 
-        // ✅ NEW WORKING API CALL (NO SDK ISSUE)
-        const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+        // ✅ NEW WORKING API CALL (NO SDK ISSUE) 
+            const response = await fetch(
+  `https://generativelanguage.googleapis.com/v1/models/gemini-1.0-pro:generateContent?key=${process.env.GEMINI_API_KEY}`,
             {
                 method: "POST",
                 headers: {
@@ -57,8 +57,12 @@ Return ONLY valid JSON:
         const jsonMatch = text.match(/\{[\s\S]*\}/);
 
         if (!jsonMatch) {
-            throw new Error("Invalid AI response");
-        }
+    console.log("FULL AI RESPONSE:", data);
+    return res.status(500).json({
+        message: "AI returned invalid format",
+        success: false
+    });
+}
 
         const parsedData = JSON.parse(jsonMatch[0]);
 
