@@ -14,7 +14,7 @@ export const getMatchScore = async (req, res) => {
         }
 
         // FIX: Ensure you are using the correct model string
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-3-flash" });
 
         const prompt = `
             Compare the following User Skills with the Job Requirements.
