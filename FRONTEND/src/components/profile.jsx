@@ -76,14 +76,14 @@ const Profile = () => {
                       {user?.email}
                     </span>
                   </div>
-                  <div className="flex items-center gap-3 text-gray-700">
+                  {/* <div className="flex items-center gap-3 text-gray-700">
                     <div className="p-2 bg-gray-50 rounded-lg">
                       <Contact size={18} className="text-gray-400" />
                     </div>
-                    {/* <span className="text-sm font-semibold">
+                    <span className="text-sm font-semibold">
                       {user?.phoneNumber || "Not provided"}
-                    </span> */}
-                  </div>
+                    </span>
+                  </div> */}
                 </div>
               </div>
 

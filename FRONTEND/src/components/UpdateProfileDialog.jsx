@@ -128,7 +128,7 @@ const UpdateProfileDialog = ({ open, setOpen }) => {
             />
           </div>
 
-          <div className="space-y-1">
+          {/* <div className="space-y-1">
             <Label className="text-[10px] font-bold uppercase text-gray-500">Phone Number</Label>
             <Input
               name="phoneNumber"
@@ -137,7 +137,7 @@ const UpdateProfileDialog = ({ open, setOpen }) => {
               className="h-9"
               placeholder="e.g. +91 7877209020"
             />
-          </div>
+          </div> */}
 
           <div className="space-y-1">
             <Label className="text-[10px] font-bold uppercase text-gray-500">Bio</Label>
