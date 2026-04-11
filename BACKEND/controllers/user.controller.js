@@ -23,7 +23,10 @@ export const register = async (req, res) => {
         let profilePhoto = "";
         if (req.file) {
             const fileUri = getDataUri(req.file);
-            const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
+            // CORRECTION: resource_type: "auto" allows PDF/Doc support
+            const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
+                resource_type: "auto"
+            });
             profilePhoto = cloudResponse.secure_url;
         }
 
@@ -43,7 +46,7 @@ export const register = async (req, res) => {
     }
 };
 
-// ================= LOGIN =================
+// ================= LOGIN & LOGOUT =================
 export const login = async (req, res) => {
     try {
         const { email, password, role } = req.body;
@@ -58,80 +61,51 @@ export const login = async (req, res) => {
             return res.status(400).json({ success: false, message: "Incorrect role" });
         }
         const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, { expiresIn: "1d" });
-        
-        return res.status(200).cookie("token", token, { 
-            httpOnly: true, 
-            sameSite: "strict", 
-            maxAge: 86400000 
-        }).json({
+        return res.status(200).cookie("token", token, { httpOnly: true, sameSite: "strict", maxAge: 86400000 }).json({
             success: true,
             message: `Welcome back ${user.fullname}`,
-            user: { 
-                _id: user._id, 
-                fullname: user.fullname, 
-                email: user.email, 
-                phoneNumber: user.phoneNumber, // Added for visibility
-                role: user.role, 
-                profile: user.profile 
-            }
+            user: { _id: user._id, fullname: user.fullname, email: user.email, role: user.role, profile: user.profile }
         });
-    } catch (error) { 
-        return res.status(500).json({ success: false }); 
-    }
+    } catch (error) { return res.status(500).json({ success: false }); }
+};
+
+export const logout = async (req, res) => {
+    return res.status(200).cookie("token", "", { maxAge: 0 }).json({ success: true, message: "Logged out" });
 };
 
 // ================= UPDATE PROFILE =================
 export const updateProfile = async (req, res) => {
     try {
         const { fullname, email, phoneNumber, bio, skills } = req.body;
-        const userId = req.id; 
+        const file = req.file;
+        const userId = req.id;
 
-        let user = await User.findById(userId);
+        const user = await User.findById(userId);
         if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
-        // Update basic fields
         if (fullname) user.fullname = fullname;
         if (email) user.email = email;
         if (phoneNumber) user.phoneNumber = phoneNumber;
         if (bio) user.profile.bio = bio;
         if (skills) user.profile.skills = skills.split(",").map(s => s.trim());
+        // Inside your updateProfile controller on the backend:
+        if (req.file) {
+            const fileUri = getDataUri(req.file);
+            const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
+                resource_type: "raw", // CRITICAL for PDF files
+                format: "pdf",
+            });
 
-        // Handling Multiple Files via req.files
-        if (req.files) {
-            // 1. Handle Resume (PDF)
-            if (req.files.file) {
-                const resumeFile = req.files.file[0];
-                const fileUri = getDataUri(resumeFile);
-                const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
-                    resource_type: "raw",
-                    format: "pdf",
-                });
-                user.profile.resume = cloudResponse.secure_url;
-                user.profile.resumeOriginalName = resumeFile.originalname;
-            }
-
-            // 2. Handle Profile Photo (Image)
-            if (req.files.profilePhoto) {
-                const photoFile = req.files.profilePhoto[0];
-                const fileUri = getDataUri(photoFile);
-                const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
-                user.profile.profilePhoto = cloudResponse.secure_url;
-            }
+            // Ensure you save the secure_url
+            user.profile.resume = cloudResponse.secure_url;
+            user.profile.resumeOriginalName = req.file.originalname;
         }
 
         await user.save();
-
         return res.status(200).json({
             success: true,
-            message: "Profile updated successfully.",
-            user: { 
-                _id: user._id, 
-                fullname: user.fullname, 
-                email: user.email, 
-                phoneNumber: user.phoneNumber, 
-                role: user.role, 
-                profile: user.profile 
-            }
+            message: "Profile updated",
+            user: { _id: user._id, fullname: user.fullname, email: user.email, role: user.role, profile: user.profile }
         });
     } catch (error) {
         console.log(error);

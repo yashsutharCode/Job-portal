@@ -16,6 +16,7 @@ const Profile = () => {
 
   const isResume = Boolean(user?.profile?.resume);
 
+  // Logic for Random Cartoon Profile if no image is uploaded
   const profilePhoto =
     user?.profile?.profilePhoto ||
     `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.fullname || "default"}`;
@@ -25,6 +26,7 @@ const Profile = () => {
       <Navbar />
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row gap-6 items-start">
+          {/* LEFT SIDEBAR: Profile Card with Purple Border */}
           <div className="w-full md:w-1/3 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm sticky top-24">
             <div className="flex flex-col items-center text-center">
               <Avatar className="h-28 w-28 border-4 border-purple-600 shadow-md mb-4 bg-gray-100">
@@ -48,6 +50,7 @@ const Profile = () => {
             </div>
           </div>
 
+          {/* RIGHT CONTENT */}
           <div className="flex-1 w-full space-y-6">
             <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
               <Label className="flex items-center gap-2 text-gray-400 font-bold text-[11px] uppercase tracking-[0.2em] mb-3">
@@ -73,7 +76,6 @@ const Profile = () => {
                       {user?.email}
                     </span>
                   </div>
-                  {/* Contact Row inside Profile.jsx */}
                   <div className="flex items-center gap-3 text-gray-700">
                     <div className="p-2 bg-gray-50 rounded-lg">
                       <Contact size={18} className="text-gray-400" />
@@ -129,7 +131,10 @@ const Profile = () => {
 
                 {isResume && (
                   <a
-                    href={user?.profile?.resume}
+                    href={user?.profile?.resume?.replace(
+                      "/upload/",
+                      "/upload/f_auto,q_auto/",
+                    )}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="bg-white border-2 border-gray-600 px-4 py-2 rounded-lg text-gray-800 text-xs font-bold hover:bg-gray-50 transition-all shadow-sm"

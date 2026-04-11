@@ -8,15 +8,6 @@ const router = express.Router();
 router.route("/register").post(singleUpload, register);
 router.route("/login").post(login);
 router.route("/logout").get(logout);
-
-// Handle both 'file' (resume) and 'profilePhoto' (avatar)
-router.route("/profile/update").post(
-    isAuthenticated, 
-    singleUpload.fields([
-        { name: 'file', maxCount: 1 }, 
-        { name: 'profilePhoto', maxCount: 1 }
-    ]), 
-    updateProfile
-);
+router.route("/profile/update").post(isAuthenticated, singleUpload, updateProfile);
 
 export default router;
