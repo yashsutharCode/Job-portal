@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Button } from "../ui/button";
-import { Avatar, AvatarImage } from "../ui/avatar";
-import { LogOut, User2, Menu, X, Sparkles } from "lucide-react"; // Added Sparkles icon
+import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar"; // Added AvatarFallback
+import { LogOut, User2, Menu, X, Sparkles } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import axios from "axios";
@@ -41,7 +41,6 @@ const Navbar = () => {
         }
     };
 
-    // Updated NavLinks to include AI highlight for students
     const NavLinks = () => (
         <>
             {user && user.role === "recruiter" ? (
@@ -65,7 +64,6 @@ const Navbar = () => {
                     {user && user.role === "student" && (
                         <>
                             <li><Link to="/applied-jobs" className="hover:text-[#6A38C2] transition-colors">Applied</Link></li>
-                            {/* Added AI Match highlight */}
                             <li className="flex items-center gap-1 text-[#7209b7] font-bold animate-pulse">
                                 <Sparkles size={16} />
                                 <Link to="/jobs">AI Match</Link>
@@ -141,35 +139,47 @@ const Navbar = () => {
     );
 };
 
-const UserPopover = ({ user, logoutHandler }) => (
-    <Popover>
-        <PopoverTrigger asChild>
-            <Avatar className="cursor-pointer border-2 border-transparent hover:border-purple-200 transition-all h-9 w-9">
-                <AvatarImage src={user?.profile?.profilePhoto || "https://github.com/shadcn.png"} />
-            </Avatar>
-        </PopoverTrigger>
-        <PopoverContent className="w-72 p-0 mt-2 overflow-hidden rounded-xl shadow-xl border-gray-100">
-            <div className="bg-gray-50/50 p-4 flex gap-3 items-center">
-                <Avatar className="h-10 w-10 shadow-sm">
-                    <AvatarImage src={user?.profile?.profilePhoto || "https://github.com/shadcn.png"} />
+const UserPopover = ({ user, logoutHandler }) => {
+    // Get the first letter of the name for the fallback
+    const userInitial = user?.fullname?.charAt(0).toUpperCase() || "U";
+
+    return (
+        <Popover>
+            <PopoverTrigger asChild>
+                {/* Fixed the purple border logic here */}
+                <Avatar className="cursor-pointer border-2 border-[#6A38C2] hover:border-purple-400 transition-all h-9 w-9">
+                    <AvatarImage src={user?.profile?.profilePhoto} />
+                    <AvatarFallback className="bg-purple-100 text-[#6A38C2] font-bold">
+                        {userInitial}
+                    </AvatarFallback>
                 </Avatar>
-                <div className="flex-1 min-w-0">
-                    <h4 className="font-bold text-gray-900 truncate">{user?.fullname}</h4>
-                    <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+            </PopoverTrigger>
+            <PopoverContent className="w-72 p-0 mt-2 overflow-hidden rounded-xl shadow-xl border-gray-100">
+                <div className="bg-gray-50/50 p-4 flex gap-3 items-center">
+                    <Avatar className="h-10 w-10 shadow-sm border border-gray-200">
+                        <AvatarImage src={user?.profile?.profilePhoto} />
+                        <AvatarFallback className="bg-purple-100 text-[#6A38C2] font-bold">
+                            {userInitial}
+                        </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                        <h4 className="font-bold text-gray-900 truncate">{user?.fullname}</h4>
+                        <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                    </div>
                 </div>
-            </div>
-            <div className="p-2">
-                <Link to="/profile" className="flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-purple-50 hover:text-[#6A38C2] transition-colors group">
-                    <User2 size={18} className="text-gray-400 group-hover:text-[#6A38C2]" />
-                    <span className="text-sm font-semibold">View Profile</span>
-                </Link>
-                <button onClick={logoutHandler} className="w-full flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors group mt-1">
-                    <LogOut size={18} className="text-gray-400 group-hover:text-red-600" />
-                    <span className="text-sm font-semibold">Logout</span>
-                </button>
-            </div>
-        </PopoverContent>
-    </Popover>
-);
+                <div className="p-2">
+                    <Link to="/profile" className="flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-purple-50 hover:text-[#6A38C2] transition-colors group">
+                        <User2 size={18} className="text-gray-400 group-hover:text-[#6A38C2]" />
+                        <span className="text-sm font-semibold">View Profile</span>
+                    </Link>
+                    <button onClick={logoutHandler} className="w-full flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors group mt-1">
+                        <LogOut size={18} className="text-gray-400 group-hover:text-red-600" />
+                        <span className="text-sm font-semibold">Logout</span>
+                    </button>
+                </div>
+            </PopoverContent>
+        </Popover>
+    );
+};
 
 export default Navbar;
