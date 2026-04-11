@@ -54,7 +54,8 @@ const Profile = () => {
                 <Info size={14} /> Professional Bio
               </Label>
               <p className="text-gray-700 text-sm leading-relaxed font-medium">
-                {user?.profile?.bio || "Describe your professional background here..."}
+                {user?.profile?.bio ||
+                  "Describe your professional background here..."}
               </p>
             </div>
 
@@ -72,13 +73,13 @@ const Profile = () => {
                       {user?.email}
                     </span>
                   </div>
+                  {/* Contact Row inside Profile.jsx */}
                   <div className="flex items-center gap-3 text-gray-700">
                     <div className="p-2 bg-gray-50 rounded-lg">
                       <Contact size={18} className="text-gray-400" />
                     </div>
                     <span className="text-sm font-semibold">
-                      {/* FIX APPLIED HERE */}
-                      {user?.profile?.phoneNumber || user?.phoneNumber || "Not provided"}
+                      {user?.phoneNumber || "Not provided"}
                     </span>
                   </div>
                 </div>
@@ -99,7 +100,9 @@ const Profile = () => {
                       </Badge>
                     ))
                   ) : (
-                    <span className="text-gray-400 text-xs italic">No skills listed</span>
+                    <span className="text-gray-400 text-xs italic">
+                      No skills listed
+                    </span>
                   )}
                 </div>
               </div>
