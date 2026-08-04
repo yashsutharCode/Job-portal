@@ -7,20 +7,18 @@ import { Button } from "../ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-hot-toast";
-import { useDispatch, useSelector } from "react-redux";
-import { setLoading } from "../../redux/authSlice";
+import { useSelector } from "react-redux";
 import { Loader2 } from "lucide-react";
 
 // 1. IMPORT the dynamic constant
 import { USER_API_END_POINT } from "../../utils/constant"; 
 
-// 2. REMOVE/DELETE this line below:
-// const USER_API_END_POINT = "http://localhost:8000/api/v1/user"; 
-
 const Signup = () => {
     const navigate = useNavigate();
-    const dispatch = useDispatch();
-    const { loading, user } = useSelector((store) => store.auth);
+    const { user } = useSelector((store) => store.auth);
+    
+    // FIX: Local loading state prevents Redux global state from freezing the button
+    const [loading, setLoadingState] = useState(false);
 
     const [input, setInput] = useState({
         fullname: "",
@@ -53,8 +51,7 @@ const Signup = () => {
         if (input.file) formData.append("file", input.file);
 
         try {
-            dispatch(setLoading(true));
-            // 3. This now uses the correct URL for any device
+            setLoadingState(true);
             const res = await axios.post(`${USER_API_END_POINT}/register`, formData, {
                 headers: { "Content-Type": "multipart/form-data" },
                 withCredentials: true,
@@ -67,7 +64,7 @@ const Signup = () => {
             console.error("Signup Error:", error);
             toast.error(error?.response?.data?.message || "Signup failed");
         } finally {
-            dispatch(setLoading(false));
+            setLoadingState(false);
         }
     };
 

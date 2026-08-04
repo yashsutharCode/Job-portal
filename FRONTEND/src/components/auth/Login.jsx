@@ -9,13 +9,16 @@ import axios from "axios";
 import { USER_API_END_POINT } from "../../utils/constant.js";
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
-import { setLoading, setUser } from "../../redux/authSlice";
+import { setUser } from "../../redux/authSlice";
 import { Loader2 } from "lucide-react";
 
 const Login = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const { loading, user } = useSelector((store) => store.auth);
+    const { user } = useSelector((store) => store.auth);
+
+    // FIX: Local loading state prevents Redux global state from freezing the button
+    const [loading, setLoadingState] = useState(false);
 
     const [input, setInput] = useState({
         email: "",
@@ -30,7 +33,7 @@ const Login = () => {
     const submitHandler = async (e) => {
         e.preventDefault();
         try {
-            dispatch(setLoading(true));
+            setLoadingState(true);
             const res = await axios.post(`${USER_API_END_POINT}/login`, input, {
                 headers: { "Content-Type": "application/json" },
                 withCredentials: true,
@@ -43,7 +46,7 @@ const Login = () => {
         } catch (error) {
             toast.error(error?.response?.data?.message || "Login failed");
         } finally {
-            dispatch(setLoading(false));
+            setLoadingState(false);
         }
     };
 
