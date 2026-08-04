@@ -61,7 +61,13 @@ export const login = async (req, res) => {
             return res.status(400).json({ success: false, message: "Incorrect role" });
         }
         const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, { expiresIn: "1d" });
-        return res.status(200).cookie("token", token, { httpOnly: true, sameSite: "strict", maxAge: 86400000 }).json({
+
+        return res.status(200).cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+            maxAge: 86400000
+        }).json({
             success: true,
             message: `Welcome back ${user.fullname}`,
             user: { _id: user._id, fullname: user.fullname, email: user.email, role: user.role, profile: user.profile }
@@ -70,7 +76,12 @@ export const login = async (req, res) => {
 };
 
 export const logout = async (req, res) => {
-    return res.status(200).cookie("token", "", { maxAge: 0 }).json({ success: true, message: "Logged out" });
+    return res.status(200).cookie("token", "", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        maxAge: 0
+    }).json({ success: true, message: "Logged out" });
 };
 
 // ================= UPDATE PROFILE =================
