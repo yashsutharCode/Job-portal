@@ -2,8 +2,7 @@ import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import authSlice from "./authSlice";
 import jobSlice from "./jobSlice";
 import companySlice from "./companySlice";
-import applicationSlice from "./applicationSlice"; //
-
+import applicationSlice from "./applicationSlice";
 
 import {
     persistStore,
@@ -18,10 +17,10 @@ import {
 
 import storage from "redux-persist/lib/storage";
 
-// 1. Persist config
+// 1. Persist config - version 2 forces existing browsers to discard outdated state
 const persistConfig = {
     key: "root",
-    version: 1,
+    version: 2,
     storage,
 };
 
@@ -30,7 +29,7 @@ const rootReducer = combineReducers({
     auth: authSlice,
     job: jobSlice,
     company: companySlice,
-    application: applicationSlice //
+    application: applicationSlice,
 });
 
 // 3. Persisted reducer
