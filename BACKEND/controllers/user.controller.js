@@ -23,7 +23,6 @@ export const register = async (req, res) => {
         let profilePhoto = "";
         if (req.file) {
             const fileUri = getDataUri(req.file);
-            // CORRECTION: resource_type: "auto" allows PDF/Doc support
             const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
                 resource_type: "auto"
             });
@@ -62,24 +61,31 @@ export const login = async (req, res) => {
         }
         const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, { expiresIn: "1d" });
 
+        // Explicit boolean checks to ensure cookies persist properly on production HTTPS
+        const isProduction = process.env.NODE_ENV === "production" || process.env.RENDER === "true";
+
         return res.status(200).cookie("token", token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+            secure: true, // Forces HTTPS cookie transmission required by Render
+            sameSite: isProduction ? "none" : "lax",
             maxAge: 86400000
         }).json({
             success: true,
             message: `Welcome back ${user.fullname}`,
             user: { _id: user._id, fullname: user.fullname, email: user.email, role: user.role, profile: user.profile }
         });
-    } catch (error) { return res.status(500).json({ success: false }); }
+    } catch (error) { 
+        return res.status(500).json({ success: false, message: "Login failed" }); 
+    }
 };
 
 export const logout = async (req, res) => {
+    const isProduction = process.env.NODE_ENV === "production" || process.env.RENDER === "true";
+
     return res.status(200).cookie("token", "", {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        secure: true,
+        sameSite: isProduction ? "none" : "lax",
         maxAge: 0
     }).json({ success: true, message: "Logged out" });
 };
@@ -88,7 +94,6 @@ export const logout = async (req, res) => {
 export const updateProfile = async (req, res) => {
     try {
         const { fullname, email, phoneNumber, bio, skills } = req.body;
-        const file = req.file;
         const userId = req.id;
 
         const user = await User.findById(userId);
@@ -99,15 +104,14 @@ export const updateProfile = async (req, res) => {
         if (phoneNumber) user.phoneNumber = phoneNumber;
         if (bio) user.profile.bio = bio;
         if (skills) user.profile.skills = skills.split(",").map(s => s.trim());
-        // Inside your updateProfile controller on the backend:
+
         if (req.file) {
             const fileUri = getDataUri(req.file);
             const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
-                resource_type: "raw", // CRITICAL for PDF files
+                resource_type: "raw",
                 format: "pdf",
             });
 
-            // Ensure you save the secure_url
             user.profile.resume = cloudResponse.secure_url;
             user.profile.resumeOriginalName = req.file.originalname;
         }
@@ -120,6 +124,6 @@ export const updateProfile = async (req, res) => {
         });
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ success: false });
+        return res.status(500).json({ success: false, message: "Profile update failed" });
     }
 };

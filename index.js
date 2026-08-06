@@ -15,11 +15,13 @@ dotenv.config();
 const app = express();
 const _dirname = path.resolve();
 
+// ENABLE TRUST PROXY FOR RENDER / REVERSE PROXIES
+app.set("trust proxy", 1);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Simplified CORS options for Production & Localhost
 const corsOptions = {
     origin: [
         "http://localhost:5173",
